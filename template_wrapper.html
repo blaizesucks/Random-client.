@@ -1,0 +1,184 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>EaglercraftX 1.8.8 — LunarPlus (Wrapped)</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<style>
+html,body{height:100%;margin:0;background:#000;overflow:hidden}
+#gameWrap{position:fixed;inset:0;overflow:hidden}
+#ifm{position:absolute;inset:0;border:0;width:100%;height:100%;transform-origin:center center; background:#000}
+#lp-root{position:fixed;inset:0;pointer-events:none;z-index:2147483000; font-family:Inter,system-ui,Segoe UI,Roboto,Helvetica,Arial,sans-serif}
+#lp-panelWrap{position:absolute;inset:0;display:none;align-items:center;justify-content:center;background:rgba(0,0,0,.45);backdrop-filter:blur(6px);pointer-events:auto}
+#lp-panel{width:min(1120px,92vw);height:min(740px,90vh);background:linear-gradient(180deg,#0e172a,#0b1020);border-radius:16px;box-shadow:0 10px 30px rgba(0,0,0,.35);display:grid;grid-template-columns:260px 1fr;border:1px solid rgba(255,255,255,.06);overflow:hidden;color:#e5e7eb}
+#lp-side{background:rgba(255,255,255,.04);padding:14px 12px;display:flex;flex-direction:column;gap:8px}
+.lp-brand{display:flex;align-items:center;gap:10px;padding:8px 10px;margin-bottom:8px}
+.lp-dot{width:10px;height:10px;border-radius:50%;background:#60a5fa}
+.lp-tab{padding:10px 12px;border-radius:12px;color:#cbd5e1;cursor:pointer;border:1px solid transparent}
+.lp-tab.lp-active{background:rgba(96,165,250,.15);border-color:rgba(96,165,250,.35);color:#fff}
+#lp-content{padding:18px;overflow:auto}
+.lp-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:12px}
+.lp-card{background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.08);border-radius:14px;padding:14px}
+.lp-row{display:flex;align-items:center;justify-content:space-between;gap:10px;margin:8px 0}
+.lp-switch{position:relative;width:50px;height:28px;background:#1f2937;border-radius:999px;border:1px solid rgba(255,255,255,.12);cursor:pointer;flex-shrink:0}
+.lp-switch .lp-knob{position:absolute;top:2px;left:2px;width:24px;height:24px;background:#fff;border-radius:999px;transition:.18s}
+.lp-switch.lp-on{background:#60a5fa} .lp-switch.lp-on .lp-knob{left:24px}
+.lp-slider{width:100%}
+.lp-btn{background:#1f2937;color:#e5e7eb;border:1px solid rgba(255,255,255,.08);padding:8px 12px;border-radius:10px;cursor:pointer}
+.lp-btn.lp-primary{background:#60a5fa;border:0;color:#08243e;font-weight:700}
+.lp-kbd{font-family:ui-monospace,Menlo,Consolas,monospace;background:#111827;color:#e5e7eb;padding:2px 6px;border-radius:6px;border:1px solid rgba(255,255,255,.08)}
+#lp-hint{position:fixed;left:10px;bottom:8px;font:12px/1.4 Inter,system-ui,sans-serif;color:#9ca3af;z-index:2147483001;text-shadow:0 1px 3px #000;pointer-events:none}
+#lp-hud{position:fixed;left:10px;top:10px;font:12px/1.4 Inter,system-ui,sans-serif;color:#cbd5e1;text-shadow:0 1px 3px #000;z-index:2147483002;pointer-events:none}
+#lp-cross{position:fixed;left:50%;top:50%;transform:translate(-50%,-50%);pointer-events:none;z-index:2147483002}
+#lp-moveHudBtn{position:fixed;right:10px;bottom:10px;z-index:2147483003;pointer-events:auto}
+.lp-pill{display:inline-block;background:rgba(0,0,0,.35);padding:6px 10px;border-radius:10px;margin:0 6px 6px 0;box-shadow:0 10px 30px rgba(0,0,0,.35)}
+.lp-draggable{position:fixed;z-index:2147483004;cursor:move;background:rgba(0,0,0,.25);border:1px dashed rgba(255,255,255,.35);padding:6px 10px;border-radius:10px;backdrop-filter:blur(3px)}
+.lp-draggable .lp-title{font-weight:700;font-size:12px;margin-bottom:4px}
+.lp-hide{display:none}
+</style>
+</head>
+<body>
+<div id="gameWrap"><iframe id="ifm" allow="gamepad *; fullscreen *; autoplay *; clipboard-read *; clipboard-write *" srcdoc="__SRCDOC__"></iframe></div>
+<div id="lp-root">
+  <div id="lp-hint"><span class="lp-kbd">Right&nbsp;Shift</span> opens Mod Menu</div>
+  <canvas id="lp-cross" width="200" height="200"></canvas>
+  <div id="lp-hud"></div>
+  <button id="lp-moveHudBtn" class="lp-btn">Move HUD</button>
+  <div id="lp-panelWrap" aria-hidden="true">
+    <div id="lp-panel">
+      <div id="lp-side">
+        <div class="lp-brand"><div class="lp-dot"></div><div><strong>LunarPlus</strong><div style="font-size:12px;color:#9ca3af">Mod Suite (Wrapper)</div></div></div>
+        <div class="lp-tab lp-active" data-tab="render">Render</div>
+        <div class="lp-tab" data-tab="player">Player</div>
+        <div class="lp-tab" data-tab="hud">HUD</div>
+        <div class="lp-tab" data-tab="settings">Settings</div>
+        <div style="margin-top:auto;display:flex;gap:8px;padding:8px">
+          <button class="lp-btn" id="lp-save">Save</button>
+          <button class="lp-btn lp-primary" id="lp-close">Close (Esc)</button>
+        </div>
+      </div>
+      <div id="lp-content">
+        <h2 id="lp-title">Render</h2>
+        <div class="lp-grid" id="lp-grid"></div>
+      </div>
+    </div>
+  </div>
+</div>
+<script>
+(function(){
+  const ifm = document.getElementById('ifm');
+  const CFG_KEY = "_lp_wrap_cfg_v1";
+  const HUD_POS_KEY = "_lp_wrap_hud_v1";
+  const cfgDefault = { ui:{keyToggle:"RightShift"}, hud:{fps:true,cps:true,coords:true,keystrokes:true}, vis:{zoomHold:true, zoom:0.8, zoomAnim:0.18, cross:false, crossSize:4, crossGap:2, crossThick:1, color:"#ffffff"} };
+  let cfg = Object.assign({}, cfgDefault, JSON.parse(localStorage.getItem(CFG_KEY)||"{}"));
+  let hudPos = Object.assign({fps:[12,12], cps:[12,40], coords:[12,68], keys:[12,96]}, JSON.parse(localStorage.getItem(HUD_POS_KEY)||"{}"));
+
+  const $ = s => document.querySelector(s), $$= s => Array.from(document.querySelectorAll(s));
+  const panelWrap = $("#lp-panelWrap"), grid=$("#lp-grid"), title=$("#lp-title");
+
+  function makeSwitch(path,label){ const div=document.createElement('div'); div.className='lp-card'; const on=path.get(); div.innerHTML='<div class="lp-row"><div>'+label+'</div><div class="lp-switch '+(on?'lp-on':'')+'"><div class="lp-knob"></div></div></div>'; const sw = div.querySelector('.lp-switch'); sw.onclick=()=>{ sw.classList.toggle('lp-on'); path.set(sw.classList.contains('lp-on')); }; return div; }
+  function makeSlider(path,label,min,max,step,fmt){ fmt=fmt|| (x=>x); const div=document.createElement('div'); div.className='lp-card'; const id=Math.random().toString(36).slice(2);
+    div.innerHTML='<div class="lp-row"><div>'+label+'</div><div style="font-size:12px;color:#9ca3af"><span id="'+id+'_v">'+fmt(path.get())+'</span></div></div><input class="lp-slider" id="'+id+'" type="range" min="'+min+'" max="'+max+'" step="'+step+'" value="'+path.get()+'">';
+    div.querySelector('#'+id).oninput=(e)=>{ path.set(parseFloat(e.target.value)); document.getElementById(id+'_v').textContent=fmt(path.get()); };
+    return div; }
+  function P(obj,key){ return { get:()=>obj[key], set:(v)=>{obj[key]=v;} }; }
+  function setTab(name){
+    $$('.lp-tab').forEach(t=>t.classList.toggle('lp-active', t.dataset.tab===name));
+    title.textContent = name.charAt(0).toUpperCase()+name.slice(1);
+    grid.innerHTML='';
+    if(name==='render'){
+      grid.append(makeSwitch(P(cfg.vis,'cross'), 'Custom Crosshair'));
+      grid.append(makeSlider(P(cfg.vis,'zoom'), 'Zoom Strength', 0.6, 0.95, 0.01, v=> (1/v).toFixed(2)+'x'));
+      grid.append(makeSlider(P(cfg.vis,'zoomAnim'), 'Zoom Smoothness', 0.08, 0.35, 0.01, v=> v.toFixed(2)));
+      grid.append(makeSwitch(P(cfg.vis,'zoomHold'), 'Hold-to-Zoom'));
+    } else if(name==='player'){
+      const d=document.createElement('div'); d.className='lp-card'; d.innerHTML='<div>Freecam & movement require TeaVM-level patching; wrapper provides overlay and zoom for now.</div>'; grid.append(d);
+    } else if(name==='hud'){
+      grid.append(makeSwitch(P(cfg.hud,'fps'), 'FPS Counter'));
+      grid.append(makeSwitch(P(cfg.hud,'cps'), 'CPS Counter'));
+      grid.append(makeSwitch(P(cfg.hud,'coords'), 'Coordinates'));
+      grid.append(makeSwitch(P(cfg.hud,'keystrokes'), 'Keystrokes'));
+    } else if(name==='settings'){
+      const d=document.createElement('div'); d.className='lp-card';
+      d.innerHTML='<div class="lp-row"><div>Open Mod Menu</div><div><span class="lp-kbd">'+(cfg.ui.keyToggle||'RightShift')+'</span></div></div>'+
+                  '<div style="font-size:12px;color:#9ca3af">Right Shift is fixed in wrapper for reliability.</div>'+
+                  '<div class="lp-row"><div>Profiles</div><div><button class="lp-btn" id="lp-exp">Export</button> <button class="lp-btn" id="lp-imp">Import</button> <button class="lp-btn lp-primary" id="lp-reset">Reset</button></div></div>';
+      grid.append(d);
+      d.querySelector("#lp-exp").onclick=()=>{ const blob=new Blob([JSON.stringify(cfg,null,2)],{type:'application/json'}); const a=document.createElement('a'); a.href=URL.createObjectURL(blob); a.download='lunarplus_wrapper_profile.json'; a.click(); };
+      d.querySelector("#lp-imp").onclick=()=>{ const i=document.createElement('input'); i.type='file'; i.accept='application/json'; i.onchange=ev=>{ const f=ev.target.files[0]; if(!f) return; f.text().then(t=>{ try{ cfg=JSON.parse(t); localStorage.setItem(CFG_KEY, JSON.stringify(cfg)); location.reload(); }catch(e){ alert('Invalid JSON'); } }); }; i.click(); };
+      d.querySelector("#lp-reset").onclick=()=>{ localStorage.removeItem(CFG_KEY); localStorage.removeItem(HUD_POS_KEY); location.reload(); };
+    }
+  }
+  $$('.lp-tab').forEach(t=>t.addEventListener('click',()=>setTab(t.dataset.tab)));
+  setTab('render');
+  document.getElementById('lp-save').onclick=()=>localStorage.setItem(CFG_KEY, JSON.stringify(cfg));
+  document.getElementById('lp-close').onclick=()=>hidePanel();
+
+  let panelVisible=false;
+  function showPanel(){ panelWrap.style.display='flex'; panelWrap.setAttribute('aria-hidden','false'); panelVisible=true; }
+  function hidePanel(){ panelWrap.style.display='none'; panelWrap.setAttribute('aria-hidden','true'); panelVisible=false; }
+  window.addEventListener('keydown', (e)=>{ if(e.code===(cfg.ui.keyToggle||'RightShift')){ e.preventDefault(); panelVisible?hidePanel():showPanel(); } }, {capture:true});
+  window.addEventListener('keydown', (e)=>{ if(e.key==='Escape' && panelVisible){ e.preventDefault(); hidePanel(); } }, {capture:true});
+
+  const cross = document.getElementById('lp-cross');
+  const hud = document.getElementById('lp-hud');
+  let fps=0, frames=0, lCps=0, rCps=0;
+  setInterval(()=>{ fps=frames; frames=0; lCps=Math.max(0,lCps-1); rCps=Math.max(0,rCps-1); },1000);
+  (function loop(){ frames++; requestAnimationFrame(loop); })();
+  window.addEventListener('mousedown',(e)=>{ if(e.button===0) lCps++; if(e.button===2) rCps++; }, {capture:true});
+  function drawHud(){
+    const pills=[];
+    if(cfg.hud.fps) pills.push('FPS: '+fps);
+    if(cfg.hud.cps) pills.push('CPS: L'+lCps+' | R'+rCps);
+    if(cfg.hud.coords) pills.push('XYZ: -- / -- / --');
+    if(cfg.hud.keystrokes) pills.push('W A S D | LMB RMB');
+    hud.innerHTML = pills.map(p=>'<span class="lp-pill">'+p+'</span>').join('');
+    const ctx=cross.getContext('2d'); const w=cross.width,h=cross.height; ctx.clearRect(0,0,w,h);
+    if(cfg.vis.cross){
+      const s=cfg.vis.crossSize,g=cfg.vis.crossGap,t=cfg.vis.crossThick;
+      ctx.fillStyle=cfg.vis.color;
+      ctx.fillRect(w/2 - g - s, h/2 - t/2, s, t);
+      ctx.fillRect(w/2 + g,     h/2 - t/2, s, t);
+      ctx.fillRect(w/2 - t/2, h/2 - g - s, t, s);
+      ctx.fillRect(w/2 - t/2, h/2 + g,     t, s);
+    }
+    requestAnimationFrame(drawHud);
+  } drawHud();
+
+  const widgets={ fps:{t:'FPS', f:()=> 'FPS: '+fps}, cps:{t:'CPS', f:()=> 'CPS: L'+lCps+' | R'+rCps}, coords:{t:'Coords', f:()=> 'XYZ: -- / -- / --'}, keys:{t:'Keystrokes', f:()=> 'W A S D | LMB RMB'} };
+  let moveMode=false; const HUD_POS_KEY = "_lp_wrap_hud_v1";
+  let hudPos2 = Object.assign({fps:[12,12], cps:[12,40], coords:[12,68], keys:[12,96]}, JSON.parse(localStorage.getItem(HUD_POS_KEY)||"{}"));
+  function renderDrags(){
+    Object.keys(widgets).forEach(k=>{
+      const id='lp-w-'+k; const old=document.getElementById(id); if(old) old.remove();
+      if(!cfg.hud[k]) return;
+      const d=document.createElement('div'); d.id=id; d.className='lp-draggable'+(moveMode?'':' lp-hide');
+      const p=hudPos2[k]||[12,12]; d.style.left=p[0]+'px'; d.style.top=p[1]+'px';
+      d.innerHTML='<div class="lp-title">'+widgets[k].t+'</div><div class="lp-body">'+widgets[k].f()+'</div>';
+      document.body.appendChild(d);
+      let dx=0,dy=0,drag=false;
+      d.onpointerdown=(e)=>{ drag=true; dx=e.clientX-parseInt(d.style.left); dy=e.clientY-parseInt(d.style.top); d.setPointerCapture(e.pointerId); };
+      d.onpointermove=(e)=>{ if(!drag) return; d.style.left=(e.clientX-dx)+'px'; d.style.top=(e.clientY-dy)+'px'; };
+      d.onpointerup=(e)=>{ drag=false; hudPos2[k]=[parseInt(d.style.left), parseInt(d.style.top)]; localStorage.setItem(HUD_POS_KEY, JSON.stringify(hudPos2)); };
+    });
+  }
+  renderDrags();
+  setInterval(()=>{ Object.keys(widgets).forEach(k=>{ const d=document.getElementById('lp-w-'+k); if(d) d.querySelector('.lp-body').textContent = widgets[k].f(); }); }, 200);
+  document.getElementById('lp-moveHudBtn').onclick=()=>{ moveMode=!moveMode; Object.keys(widgets).forEach(k=>{ const d=document.getElementById('lp-w-'+k); if(d) d.classList.toggle('lp-hide', !moveMode); }); };
+
+  // Zoom: scale iframe
+  let zoomT=1.0, zoomCur=1.0;
+  function tickZoom(){ zoomCur += (zoomT - zoomCur) * (cfg.vis.zoomAnim||0.18); ifm.style.transform = 'scale('+zoomCur+')'; requestAnimationFrame(tickZoom); } tickZoom();
+  function setZoom(on){ zoomT = on ? (cfg.vis.zoom||0.8) : 1.0; }
+  window.addEventListener('keydown',(e)=>{ if(e.code==='KeyC'){ if(cfg.vis.zoomHold) setZoom(true); else setZoom(zoomT===1.0); } }, {capture:true});
+  window.addEventListener('keyup',(e)=>{ if(e.code==='KeyC' && cfg.vis.zoomHold) setZoom(false); }, {capture:true});
+
+  // Only consume keys when panel is open
+  window.addEventListener('keydown',(e)=>{ if(!panelVisible) return; if(e.code!=='Escape') e.preventDefault(); }, {capture:true});
+
+  // Focus child for keyboard controls
+  ifm.addEventListener('load', ()=>{ try{ ifm.contentWindow.focus(); }catch(_){} });
+})();
+</script>
+</body>
+</html>
