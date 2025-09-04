@@ -1,0 +1,33 @@
+*** a/src/net/minecraft/client/gui/GuiOptions.java
+--- b/src/net/minecraft/client/gui/GuiOptions.java
+@@
+     public void initGui() {
+         int i = 0;
+         // existing options...
+-        this.buttonList.add(new GuiButton(200, this.width / 2 - 100, this.height / 6 + 168, I18n.format("gui.done", new Object[0])));
++        this.buttonList.add(new GuiButton(2011, this.width / 2 - 100, this.height / 6 + 144, "Lunar++ Settings"));
++        this.buttonList.add(new GuiButton(200, this.width / 2 - 100, this.height / 6 + 168, I18n.format("gui.done", new Object[0])));
+     }
+@@
+     protected void actionPerformed(GuiButton button) throws IOException {
+         if (button.enabled) {
+             if (button.id == 200) {
+                 this.mc.gameSettings.saveOptions();
+                 this.mc.displayGuiScreen(this.parentScreen);
++            } else if (button.id == 2011) {
++                this.mc.displayGuiScreen(new net.lax1dude.eaglercraft.v1_8.mods.lunarpp.gui.GuiLunarPlusMenu(this));
+             } else {
+                 // vanilla handling...
+             }
+         }
+     }
+
+*** a/src/net/minecraft/client/gui/GuiIngame.java
+--- b/src/net/minecraft/client/gui/GuiIngame.java
+@@
+     public void renderGameOverlay(float partialTicks) {
+         // vanilla overlay
+         // ...
++        // LUNAR++ draw HUD
++        net.lax1dude.eaglercraft.v1_8.mods.lunarpp.LunarPlusMod.renderHud(partialTicks);
+     }

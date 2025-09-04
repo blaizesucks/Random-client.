@@ -1,103 +1,88 @@
-# EaglercraftX 1.8.8 — LunarPlus
+# Lunar++ Integrated GUI & HUD for EaglercraftX 1.8.8 (Desktop Only)
 
-A mod suite for **EaglercraftX 1.8.8** with a Lunar-style menu and HUD.
+This pack integrates a Lunar-style GUI and HUD **inside** the Eaglercraft client so the menu
+opens from **inside the game** via the keybind system (default: **Right Shift**). No HTML overlay.
+Android/mobile code is intentionally removed/omitted.
 
-This repo contains two tracks:
+**What’s included**
+- In-game **Right Shift** menu (toggle) that *ungrabs* the mouse (ESC-like) but does **not pause** the world
+- Tabs: Player, Visuals, HUD, Keybinds, Profiles, About
+- Draggable HUD modules: **CPS**, **Keystrokes**, **FPS** (positions persist in localStorage)
+- Smooth **Zoom** (true FOV-based, default key: **C**), adjustable amount and easing
+- **Freecam (overlay)** toggle placeholder (stops input capture; real camera detachment requires deeper hooks)
+- **Toggle Sprint / Toggle Sneak** (client-side key state latching)
+- **FullBright**, **Crosshair dot**, **HUD scaling**, **Saturation**
+- **Profiles**: save/load/delete full config
+- **Options → Controls** entries for all keybinds
+- Desktop only – Android support removed
 
-1. **Wrapper Build (Quick & Works Now)**
-   - Produces a **single-file HTML** client by embedding your existing `EaglercraftX_1.8_Signed_Offline.html` inside a wrapper that adds:
-     - Right-Shift mod menu (Render / Player / HUD / Settings)
-     - Draggable HUD (CPS, FPS, Coords, Keystrokes) + **Move HUD** button
-     - Smooth Zoom (hold **C** by default)
-     - Custom crosshair
-     - Fixes the **gamepad permissions** crash by using an iframe with `allow="gamepad *"`
-   - No source patching required.
-
-2. **Native TeaVM Mod (Advanced)**
-   - Source-level patching of the EaglercraftX 1.8.8 client (TeaVM).
-   - Integrates Right-Shift GUI, keybinds, freecam, zoom, HUD, and settings **inside the game**.
-   - Recommended path if you want *true* freecam and Controls-menu integration.
-
----
-
-## Quick Start (Wrapper Build)
-
-> This is the fastest way to get a working client with the mod menu and HUD.
-
-**Requirements:** Python 3.9+
-
-1. Download the official offline build HTML from your source (e.g., IPFS zip) and extract it, or use your existing file. You want a file named **`EaglercraftX_1.8_u53_Offline_Signed.html`** (the exact name can vary; any valid offline single-file HTML works).
-
-2. Run:
-```bash
-python3 wrapper/build.py /path/to/EaglercraftX_1.8_u53_Offline_Signed.html out/EaglercraftX_LunarPlus_WRAPPED.html
-```
-
-3. Open the generated `out/EaglercraftX_LunarPlus_WRAPPED.html` in Chrome/Edge.
-
-### Default Controls
-
-- **Right Shift** → Open/close mod menu
-- **C** → Zoom (hold to zoom; toggle in Render tab)
-- Bottom-right **Move HUD** button to reposition widgets (auto-saves)
-
-> The wrapper intentionally **does not block typing** in chat when the menu is closed and removes the top lip.
+> Note: Advanced features that need access to Minecraft internals (true detached camera, hitbox render,
+> packet-accurate CPS, server ping readout, etc.) require additional hooks in Minecraft classes.
+> This patch scaffolds those hooks and marks them with `// LUNAR++ HOOK` comments.
 
 ---
 
-## Native Mod (TeaVM) — *Advanced Outline*
+## Apply to Source
 
-If you want **true freecam**, internal **Controls** integration, and FOV-based zoom that matches 1.8 exactly, use the TeaVM source path.
+These files assume an **MCP-like** source layout for EaglercraftX 1.8.8 (the archive repo uses similar names).
+If your repo differs, adjust package paths accordingly.
 
-### Steps (high level)
-
-1. Clone the archived source:
+1) **Copy** `src/` into your EaglercraftX 1.8.8 source tree root (it complements existing packages):
 ```
-git clone https://github.com/Eaglercraft-Archive/Eaglercraftx-1.8.8-src.git
+your-repo/
+  src/
+    net/
+      lax1dude/
+        eaglercraft/
+          v1_8/
+            mods/
+              lunarpp/   <-- (new)
+  (existing src for Minecraft/Eaglercraft)
 ```
 
-2. Review `native-mod/README_native.md` for the suggested patch points:
-   - Add a **Right Shift** keybind
-   - Inject a **LunarPlusScreen** GUI (in-game GUI layer)
-   - Implement **HUD overlays** via the in-game renderer
-   - Implement **Zoom** via FOV manipulation
-   - Implement **Freecam** by detaching the camera from the player
+2) **Patch** vanilla files using the unified diffs in `patches/`.
+Apply with `git apply` (from repo root) or manually:
+```
+git apply patches/0001-minecraft-hooks-and-controls.diff
+git apply patches/0002-ingame-overlay-hud-hooks.diff
+```
 
-3. Build using the repo’s TeaVM build scripts. Replace the produced HTML’s body with the wrapper **overlay** if you still want the HUD move helper (optional).
+3) **Build** with the original TeaVM/Gradle script your repo uses to make the single-file HTML.
+This patch **does not** change the build pipeline—only adds sources and small hooks.
 
 ---
 
-## Repo Layout
+## Keybinds (default)
+- Menu: **Right Shift** (`ShiftRight`)
+- Zoom (hold): **C** (`KeyC`)
+- Freecam toggle: **V** (`KeyV`)
+- Hat toggle: **H** (`KeyH`)
 
-```
-.
-├─ wrapper/
-│  ├─ build.py                 # CLI: embed upstream HTML into the LunarPlus wrapper
-│  ├─ template_wrapper.html    # Wrapper template with mod menu + HUD
-│  └─ README_wrapper.md
-├─ native-mod/
-│  ├─ README_native.md         # Where to patch TeaVM sources (classes & hooks)
-│  └─ examples/                # Illustrative pseudo-code
-├─ .github/workflows/
-│  └─ build.yml                # Optional CI to assemble the wrapper from an uploaded artifact path
-├─ out/                        # Build outputs (gitignored)
-├─ .gitignore
-├─ LICENSE
-└─ README.md
-```
+All are available and **rebindable** in `Options → Controls → Lunar++` section.
 
 ---
 
-## FAQ
+## Where things live
 
-**Q: Do I need a GitHub repo?**  
-A: Not to *use* the single HTML. But a repo makes it easier to track changes and collaborate.
+- Core mod entry: `net.lax1dude.eaglercraft.v1_8.mods.lunarpp.LunarPlusMod`
+- Key handling: `...lunarpp.input.LunarPlusKeyHandler`
+- Options model: `...lunarpp.config.LunarPlusOptions`
+- HUD: `...lunarpp.hud.LunarPlusHud`
+- GUI screen: `...lunarpp.gui.GuiLunarPlusMenu`
 
-**Q: Why not just inject JavaScript into the HTML directly?**  
-A: The game is TeaVM-compiled. Overlays work, but **native** features (freecam, keybind settings) need **source-level** hooks.
+**Hooks added** (via patches):
+- `Minecraft.java`: tick & focus hooks, pointer lock toggle, FOV zoom multiplier
+- `GameSettings.java`: registers keybinds & category
+- `GuiOptions.java`: adds a “Lunar++ Settings” button and routes to `GuiLunarPlusMenu`
+- `GuiIngame.java`: calls HUD renderer
 
-**Q: It says “file not found.”**  
-A: This wrapper is one single file when built. If you see that error, make sure you opened the generated `out/EaglercraftX_LunarPlus_WRAPPED.html` and not the template.
+---
 
-**Q: Gamepad crash?**  
-A: The wrapper gives the game an iframe with `allow="gamepad *"`, which avoids the permissions error environments sometimes trigger.
+## Troubleshooting
+
+- **GUI doesn’t open**: ensure `Minecraft#runTick` has the `LUNAR++ HOOK` block that calls `LunarPlusMod.handleGlobalKey`.
+- **No mouse unlock** on menu: confirm the hook `LunarPlusMod.setMenuOpen(...)` is called and `Minecraft.mouseHelper` is released.
+- **Zoom feels weird**: adjust defaults in `LunarPlusOptions.DEFAULT_ZOOM_AMOUNT` and `DEFAULT_ZOOM_EASE`.
+- **Build fails**: your package names might differ; search for classes mentioned in patches and adjust imports.
+
+Good luck! — and yes, Android is excluded by design here.

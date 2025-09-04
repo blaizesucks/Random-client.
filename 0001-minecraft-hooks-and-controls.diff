@@ -1,0 +1,74 @@
+*** a/src/net/minecraft/client/Minecraft.java
+--- b/src/net/minecraft/client/Minecraft.java
+@@
+ import net.minecraft.util.Timer;
++// LUNAR++
++import net.lax1dude.eaglercraft.v1_8.mods.lunarpp.LunarPlusMod;
+ 
+@@
+     public void runTick() throws IOException {
+         this.mcProfiler.startSection("scheduledExecutables");
+         synchronized (this.scheduledTasks) { /* ... vanilla ... */ }
+         this.mcProfiler.endSection();
+ 
++        // LUNAR++ HOOK: per-tick input & menu toggle
++        LunarPlusMod.clientTick();
++
+         int i = 0;
+         while (Keyboard.next()) { /* ... vanilla input ... */ }
+         while (Mouse.next()) { /* ... vanilla mouse ... */ }
+@@
+     public void setIngameFocus() {
+         if (Display.isActive()) {
+             if (!this.inGameHasFocus) {
+                 this.inGameHasFocus = true;
+                 this.mouseHelper.grabMouseCursor();
+             }
+         }
+     }
++    // LUNAR++: expose ungrab for menu
++    public void releaseIngameFocusLunar() {
++        if (this.inGameHasFocus) {
++            this.inGameHasFocus = false;
++            this.mouseHelper.ungrabMouseCursor();
++        }
++    }
+
+*** a/src/net/minecraft/client/settings/GameSettings.java
+--- b/src/net/minecraft/client/settings/GameSettings.java
+@@
+     public KeyBinding keyBindSprint = new KeyBinding("key.sprint", 29, "key.categories.movement");
+     public KeyBinding keyBindSneak = new KeyBinding("key.sneak", 42, "key.categories.movement");
++
++    // LUNAR++ BEGIN
++    public static final String LUNAR_CAT = "Lunar++";
++    public net.lax1dude.eaglercraft.v1_8.mods.lunarpp.input.LunarPlusKeyHandler lunarppKeys;
++    // LUNAR++ END
+@@
+     public GameSettings(Minecraft mcIn, File p_i1019_2_) {
+         this.mc = mcIn;
+         this.optionsFile = new File(p_i1019_2_, "options.txt");
+         // existing key list population...
++        // LUNAR++ register custom keys
++        this.lunarppKeys = new net.lax1dude.eaglercraft.v1_8.mods.lunarpp.input.LunarPlusKeyHandler();
++        KeyBinding[] arr = new KeyBinding[] {
++            lunarppKeys.keyMenu,
++            lunarppKeys.keyZoom,
++            lunarppKeys.keyFreecam,
++            lunarppKeys.keyHat
++        };
++        for (KeyBinding kb : arr) {
++            KeyBinding.hash.addKeyBinding(kb);
++        }
+     }
+
+*** a/src/net/minecraft/client/renderer/EntityRenderer.java
+--- b/src/net/minecraft/client/renderer/EntityRenderer.java
+@@
+     private float getFOVModifier(float partialTicks, boolean useFOVSetting) {
+         // vanilla computes fov
+         float f = /* ... existing calc ... */;
+-        return f;
++        // LUNAR++ zoom hook
++        return net.lax1dude.eaglercraft.v1_8.mods.lunarpp.LunarPlusMod.applyZoom(f);
+     }
